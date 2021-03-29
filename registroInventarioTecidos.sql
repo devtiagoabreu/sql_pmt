@@ -111,6 +111,52 @@ ORDER BY
 	CP.Desenho,
 	CP.Variante
 	
+--EM ESTOQUE / CUSTO SITUACAO / ANALITICO
+	
+SELECT
+	CP.Produto AS ProdutoCodigo,
+	Produtos.Descricao AS ProdutoDescricao,
+	CP.Nro_Rolo AS NumeroRolo,
+	CP.Nro_Peca AS NumeroPeca,
+	CP.Situacao,
+	CP.Cor,
+	Car_Cores.Descricao AS CorDescricao,
+	CP.Desenho,
+	CP.Variante,
+	ISNULL(CP.Metros,0) AS Metros,
+	ISNULL(CP.Peso,0) AS Peso,
+	ISNULL((CASE   
+		WHEN CP.Situacao = '000' THEN Produtos_Tecidos.Custo_Cru
+		WHEN CP.Situacao = '001' THEN Produtos_Tecidos.Custo_Remessa
+		WHEN CP.Situacao = '002' THEN Produtos_Tecidos.Custo_Estampado
+		WHEN CP.Situacao = '009' THEN Produtos_Tecidos.Custo_Estampado
+		ELSE '0'	
+	END),0) AS CustoMetro,
+	ISNULL(Produtos_Tecidos.Custo_Outros, 0) AS CustoMetroOutros
+FROM 
+	DBMicrodata.dbo.Cte_Peca CP 
+	LEFT JOIN DBMicrodata.dbo.CTE_Baixa CB ON CP.Empresa=CB.Empresa and CP.Situacao=CB.Situacao and CP.Nro_Rolo=CB.Nro_Rolo and CP.Nro_Peca=CB.Nro_Peca
+	INNER JOIN DBMicrodata.dbo.Produtos ON Produtos.Codigo = CP.Produto
+	INNER JOIN DBMicrodata.dbo.Produtos_Tecidos ON Produtos_Tecidos.Produto = CP.Produto
+	INNER JOIN DBMicrodata.dbo.Car_Cores ON Car_Cores.Codigo = CP.Cor
+WHERE 
+	CP.Empresa like '01' AND 
+	CP.Situacao like '%' AND 
+	CP.Nro_Rolo like '%' AND 
+	CP.Nro_Peca like '%' AND 
+	CP.Produto like '%' AND 
+	Cor like '%' AND 
+	Desenho like '%' AND 
+	Categoria_Tinto Like '%01%' AND 
+	IsNull(Variante, '') Like '%' AND
+	CB.Data_Saida IS NULL
+ORDER BY
+	CP.Produto,
+	CP.Situacao,
+	CP.Cor,
+	CP.Desenho,
+	CP.Variante
+	
 --BAIXA POR INVENTARIO	
 SELECT
 	CP.Produto AS ProdutoCodigo,
@@ -122,9 +168,7 @@ SELECT
 	CP.Variante,
 	SUM(ISNULL(CP.Metros,0)) AS Metros,
 	SUM(ISNULL(CP.Peso,0)) AS Peso,
-	CB.Observacao ,
-	CB.Corte_Altera,
-	CB.Data_Saida 
+	CB.Data_Saida AS DataSaida 
 FROM 
 	DBMicrodata.dbo.Cte_Peca CP 
 	LEFT JOIN DBMicrodata.dbo.CTE_Baixa CB ON CP.Empresa=CB.Empresa and CP.Situacao=CB.Situacao and CP.Nro_Rolo=CB.Nro_Rolo and CP.Nro_Peca=CB.Nro_Peca
