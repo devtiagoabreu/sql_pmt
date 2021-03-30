@@ -1,4 +1,4 @@
-CREATE TABLE tblRegistoInventarioTecidos (
+CREATE TABLE tblRegistroInventarioTecidos (
   ProdutoCodigo VARCHAR(20)  NULL  ,
   ProdutoDescricao VARCHAR(255)  NULL  ,
   NumeroRolo VARCHAR(20)  NULL  ,
