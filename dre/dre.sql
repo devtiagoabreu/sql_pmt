@@ -18,9 +18,16 @@ FROM
   (Tipo_Entidade='A' or Tipo_Entidade='F') AND
   DBMicrodata.dbo.Pag_Operacoes.Descricao = 'ADMINISTRATIVO'
 	  
-	  
-SELECT CAST(CAST(GETDATE() - DAY(GETDATE()) AS DATE) AS DATETIME)
-
+--TRABALHANDO COM DATAS	  
+SELECT 
+	CAST(CAST(GETDATE() - DAY(GETDATE()) AS DATE) AS DATETIME),
+	DATEADD(MONTH, -1,CAST(CAST(GETDATE() - DAY(GETDATE()) + 1 AS DATE) AS DATETIME)),
+	CAST(CAST(GETDATE() - DAY(GETDATE()) AS DATE) AS DATETIME),
+	DAY(GETDATE()),
+	DATEADD(MONTH, 0,CAST(CAST(GETDATE() - DAY(GETDATE()) + 1 AS DATE) AS DATETIME)),
+	DATEADD(MONTH, 1,CAST(CAST(GETDATE() - DAY(GETDATE()) AS DATE) AS DATETIME))
+	
+--RETORNA BAIXAS DAS OPERACOES ADMINISTRATIVAS NO PERIODO DO PRIMEIRO AO ULTIMO DIA DO MES ATUAL
 SELECT
 	  ISNULL(SUM(DBMicrodata.dbo.Pag_Baixas.Valor_Liquido), 0) 
 FROM 
@@ -32,7 +39,7 @@ FROM
   LEFT JOIN DBMicrodata.dbo.Pag_Historicos ON (DBMicrodata.dbo.Pag_Baixas.Cod_Historico=DBMicrodata.dbo.Pag_Historicos.Cod_Historico_Historicos)
   LEFT JOIN DBMicrodata.dbo.Pag_Operacoes ON (DBMicrodata.dbo.Pag_Operacoes.Codigo = DBMicrodata.dbo.NFE_Parcelas.Operacao)
 WHERE 
-  DBMicrodata.dbo.Pag_Baixas.Data_Baixa>= '2021-04-01 00:00:00.000' AND 
-  DBMicrodata.dbo.Pag_Baixas.Data_Baixa<= '2021-04-31 00:00:00.000' AND 
+  DBMicrodata.dbo.Pag_Baixas.Data_Baixa>= DATEADD(MONTH, 0,CAST(CAST(GETDATE() - DAY(GETDATE()) + 1 AS DATE) AS DATETIME)) AND 
+  DBMicrodata.dbo.Pag_Baixas.Data_Baixa<= DATEADD(MONTH, 1,CAST(CAST(GETDATE() - DAY(GETDATE()) AS DATE) AS DATETIME)) AND 
   (Tipo_Entidade='A' or Tipo_Entidade='F') AND
   DBMicrodata.dbo.Pag_Operacoes.Descricao = 'ADMINISTRATIVO';
