@@ -24,13 +24,18 @@ ORDER BY
 	Vencimento,
 	TC.Razao_Nome_Cliente, 
 	Emissao;
---DBPROMODA	
+--SIMPLIFICADO NO BANCO DA DBPROMODA PARA DRE
 SELECT
 	MONTH(Vencimento) AS MES,
-	SUM(Valor) AS VALOR
+	REPLACE(SUM(Valor),'.',',') AS VALOR
 FROM
 	vwListagemEntradasMesAtual
 GROUP BY
 	MONTH(Vencimento)
 ORDER BY
 	MES
+	
+SELECT
+	REPLACE(SUM(Valor),'.',',') AS VALOR
+FROM
+	vwListagemEntradasMesAtual
