@@ -70,6 +70,7 @@ FROM
 ORDER BY
 	Operacao
 	
+--CONTAS PAGAS MES ATUAL AGRUPADAS POR CUSTO VARIAVEL E CUSTO FIXO 
 SELECT
 	REPLACE(ISNULL(SUM(ValorLiquido),0),'.',',') AS CustoVariavel
 FROM 
@@ -83,3 +84,13 @@ FROM
 	vwListagemContasPagarBaixasMesAtual
 WHERE
 	ReferenciaCodigo = 'CF'
+--CONTAS PAGAS MES ATUAL AGRUPADAS POR OPERACAO
+SELECT
+	Operacao,
+	REPLACE(ISNULL(SUM(ValorLiquido),0),'.',',') AS CustoTotal
+FROM 
+	vwListagemContasPagarBaixasMesAtual
+GROUP BY
+	Operacao	
+ORDER BY
+	Operacao
