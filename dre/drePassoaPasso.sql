@@ -72,16 +72,35 @@ FROM
 ORDER BY
 	Operacao
 	
+	
+--CONTAS PAGAS MES ATUAL LANÇADAS MANUALMENTE EM DADOS COMPLEMENTARES POR CUSTO VARIAVEL E CUSTO FIXO
+SELECT 
+	REPLACE(SUM(ISNULL(valor,0)),'.',',') AS CustoVariavelManual 
+FROM 
+	tblDREDadosComplementares 
+	INNER JOIN tblDREReferencias ON tblDREReferencias.id = tblDREDadosComplementares.tblDREReferencias_id 
+WHERE 
+	tblDREReferencias.tipo = 'CV'
+	
+SELECT 
+	REPLACE(SUM(ISNULL(valor,0)),'.',',') AS CustoFixoManual 
+FROM 
+	tblDREDadosComplementares 
+	INNER JOIN tblDREReferencias ON tblDREReferencias.id = tblDREDadosComplementares.tblDREReferencias_id 
+WHERE 
+	tblDREReferencias.tipo = 'CF'
+
+	
 --CONTAS PAGAS MES ATUAL AGRUPADAS POR CUSTO VARIAVEL E CUSTO FIXO 
 SELECT
-	REPLACE(ISNULL(SUM(ValorLiquido),0),'.',',') AS CustoVariavel
+	REPLACE(ISNULL(SUM(ValorLiquido),0),'.',',') AS CustoVariavelSistema
 FROM 
 	vwListagemContasPagarBaixasMesAtual
 WHERE
 	ReferenciaCodigo = 'CV'
 	
 SELECT
-	REPLACE(ISNULL(SUM(ValorLiquido),0),'.',',') AS CustoFixo
+	REPLACE(ISNULL(SUM(ValorLiquido),0),'.',',') AS CustoFixoSistema
 FROM 
 	vwListagemContasPagarBaixasMesAtual
 WHERE
@@ -102,25 +121,104 @@ ORDER BY
 
 --DETALHANDO CUSTOS FIXOS (PLANILHA)
 
+
+--CRIANDO NOVAS TABELAS PARA INSERIR DADOS COMPLEMENTARES DA DRE
+CREATE TABLE tblDREReferencias (
+  id INTEGER  NOT NULL   IDENTITY ,
+  descricao VARCHAR(60)  NOT NULL    ,
+PRIMARY KEY(id));
+GO
+
+CREATE TABLE tblDREDadosComplementares (
+  id INTEGER  NOT NULL   IDENTITY ,
+  tblDREReferencias_id INTEGER  NOT NULL  ,
+  valor DECIMAL(18,5)  NOT NULL DEFAULT 0 ,
+  data_2 DATETIME  NOT NULL DEFAULT GETDATE() ,
+  operador VARCHAR(5)      ,
+PRIMARY KEY(id)  ,
+  FOREIGN KEY(tblDREReferencias_id)
+    REFERENCES tblDREReferencias(id));
+GO
+
+
+CREATE INDEX tblDREDadosComplementares_FKIndexDREReferencias ON tblDREDadosComplementares (tblDREReferencias_id);
+GO
+
+
+CREATE INDEX IFK_REL_tblDREDadosComplementa ON tblDREDadosComplementares (tblDREReferencias_id);
+GO
+
+--ALTERANDO TABELA DE REFERENCIAS
+--ISERINDO NOVO CAMPO TIPO CUSTO VARIAVEL(CV) E CUSTO FIXO (CF)
+ALTER TABLE tblDREReferencias
+ADD tipo CHAR(2) NULL DEFAULT 'CV';
+
+--UPDATE TABELA DE REFERENCIAS - CAMPO TIPO
+UPDATE tblDREReferencias
+SET 
+	tipo = 'CV'
+WHERE
+	id = 7
+
+--POPULANDO DRE REFERENCIAS
+--EXEMPLO:
+INSERT INTO tblDREReferencias
+	(
+		descricao
+	)
+	VALUES
+	(
+		'FERIAS / 13 SALARIO'
+	);
 	
+	
+INSERT tblDREReferencias
+
+-- =============================================
+--	id	descricao
+--	1	'COMISSAO VENDEDORES'
+--	2	'COMISSAO GERENTES COMERCIAIS'
+--	3	'PIS'
+--	4	'COFINS'
+--	5	'ICMS'
+--	6	'IMPOSTOS PIS/COFINS/ICMS'
+--	7	'FERIAS / 13 SALARIO'
+-- =============================================
+	
+--PARÂMETROS @Operador varchar(5), @Valor decimal(18,5), @Referencia int, @Data_2 datetime
+--4) COMISSAO VENDEDORES (VALOR NAO INSERIDO NO SISTEMA)
+EXEC uspDREDadosComplementaresInsert '96', @Valor,1,'2021-04-10 00:00:001'
+
+--5) COMISSAO GER.COMERCIAL (VALOR NAO INSERIDO NO SISTEMA)
+EXEC uspDREDadosComplementaresInsert '96', @Valor,2,'2021-04-10 00:00:001'
+
+--6) IMPOSTOS (VALOR PROCESSADO PELO SISTEMA DE FORMA ERRADA DEVIDO A FALTA DE INFORMACAO DO ESCRITORIO - )
+EXEC uspDREDadosComplementaresInsert '96', @Valor,6,'2021-04-10 00:00:001'
+
+--7) FERIAS / 13 SALARIO
+EXEC uspDREDadosComplementaresInsert '96', @Valor,7,'2021-04-10 00:00:001'
+
 --3) FATURAMENTO EMPRESAS: 01|02
+SELECT 
+	REPLACE(SUM(ISNULL(ValorTotalItens,0)),'.',',') as faturamento	 
+FROM
+	vwFaturamentoMesAtualPorGrupoSintetico
 
---4) COMISSAO VENDEDORES
--- REALIZAR A INSERCAO DE COMISSAO DE VENDEDORES NO INTEGRA
 
---5) COMISSAO GER.COMERCIAL
--- REALIZAR O A INSERCAO DE COMISSAO DE GERENTES COMERCIAIS NO INTEGRA
-
---6) IMPOSTOS
--- REALIZAR A INSERÇ
-
---ANALISANDO DADOS
+-- ANALISANDO DADOS
 -- ANALISE DE LUCRATIVIDADE (PLANILHA)
+
+-- RECEITA BRUTA	                     1.397.194,05	100,00%
+-- DEDUÇOES		                                        0,00%
+-- CUSTO VARIAVEL		                                0,00%
+-- CUSTO FIXO		                                    0,00%
+-- RESULTADO OPERACIONAL		                        0,00%
+--		                                                0,00%
+
+EXEC uspDREAnaliseLucratividadeMesAtual 
 
 
 --BALANCO (PLANILHA)
 
 
 
-exec uspCalculaPIS_COFINS_MesAnterior
-exec uspCalculaPIS_COFINS
