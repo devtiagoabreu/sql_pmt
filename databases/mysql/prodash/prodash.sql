@@ -28,7 +28,7 @@ CREATE DEFINER=root@localhost PROCEDURE uspSaldoFacionistaInserir(
 	
 )
 BEGIN
-   INSERT INTO nomeTabela
+   INSERT INTO SaldoFacionista
 	(
 		Empresa,
         Facionista,
