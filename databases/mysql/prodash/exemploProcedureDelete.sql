@@ -1,0 +1,9 @@
+CREATE DATABASE IF NOT EXISTS prodash;
+USE prodash;
+
+DELIMITER //
+CREATE DEFINER=root@localhost PROCEDURE uspNomeProcedureDeletar()
+BEGIN
+	TRUNCATE TABLE nomeTabela;
+END//
+DELIMITER ;

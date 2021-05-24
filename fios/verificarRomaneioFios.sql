@@ -1,4 +1,4 @@
--- romaneio de baixa realizada para regularizar estoque e fisco
+--romaneio de baixa realizada para regularizar estoque e fisco
 --data de baixa: 2021-01-30 12:18:00
 SELECT
 	Ret_BaixaCxsFios.Romaneio_Caixa AS romaneio, 

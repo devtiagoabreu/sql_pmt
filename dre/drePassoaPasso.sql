@@ -215,7 +215,10 @@ FROM
 -- RESULTADO OPERACIONAL		                        0,00%
 --		                                                0,00%
 
-EXEC uspDREAnaliseLucratividadeMesAtual 
+EXEC uspDREAnaliseLucratividadeMesAtual
+
+
+EXEC uspDREAnaliseLucratividade '02/05/2021' 
 
 
 --BALANCO (PLANILHA)
